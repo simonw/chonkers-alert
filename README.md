@@ -8,7 +8,8 @@ out at Pier 39 in San Francisco — scraped from iNaturalist.
 
 ## How it works
 
-A GitHub Actions workflow runs every 6 hours and:
+A GitHub Actions workflow runs every 15 minutes (and on push / manual
+dispatch) and:
 
 1. Calls the [iNaturalist API](https://api.inaturalist.org/v1/observations)
    for Steller sea lion (*Eumetopias jubatus*, taxon `41755`) observations
