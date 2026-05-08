@@ -3,6 +3,12 @@ name: Scrape
 on:
   push:
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: Force deploy even if no changes
+        required: false
+        default: false
+        type: boolean
   schedule:
   - cron: '*/15 * * * *'
 
@@ -35,16 +41,16 @@ jobs:
         git push
         echo "changes_detected=true" >> $GITHUB_OUTPUT
     - name: Setup Pages
-      if: steps.commit.outputs.changes_detected == 'true'
+      if: ${{ steps.commit.outputs.changes_detected == 'true' || github.event.inputs.force_deploy == 'true' }}
       uses: actions/configure-pages@v4
     - name: Build site
-      if: steps.commit.outputs.changes_detected == 'true'
+      if: ${{ steps.commit.outputs.changes_detected == 'true' || github.event.inputs.force_deploy == 'true' }}
       run: |
         mkdir _site
         cat *.json | python to_atom.py > _site/atom.xml
         cat *.json | python to_html.py > _site/index.html
     - name: Upload artifact
-      if: steps.commit.outputs.changes_detected == 'true'
+      if: ${{ steps.commit.outputs.changes_detected == 'true' || github.event.inputs.force_deploy == 'true' }}
       uses: actions/upload-pages-artifact@v3
   deploy:
     environment:
@@ -52,7 +58,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: scrape
-    if: ${{ needs.scrape.outputs.changes_detected == 'true' }}
+    if: ${{ needs.scrape.outputs.changes_detected == 'true' || github.event.inputs.force_deploy == 'true' }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
